@@ -1,6 +1,6 @@
 openai
 tiktoken 
-chromadb==0.4.4
+chromadb>=0.5.0
 langchain==0.0.249
 flask
 GitPython

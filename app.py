@@ -22,7 +22,12 @@ persist_directory = 'db'
 vectordb = Chroma(persist_directory=persist_directory,embedding_func=embeddings)
 
 
-llm = ChatOpenAI()
+llm = ChatOpenAI(
+    model="google/gemini-2.5-flash-lite",
+    openai_api_key=os.getenv("OPENROUTER_API_KEY"),
+    openai_api_base="https://openrouter.ai/api/v1"
+)
+
 memory = ConversationSummaryMemory(llm=llm,memory_key = "chat history",return_message = True)
 qa = ConversationalRetrievalChain.from_llm(llm,retriever=vectordb.as_retriever(search_type="mmr", search_kwargs={"k":8}), memory=memory)
 
@@ -49,7 +54,7 @@ def chat():
     print(input)
 
     if input == 'clear':
-        os.system("")
+        os.system("rm -rf repo")
 
     result = qa(input)
     print(result['answer'])
