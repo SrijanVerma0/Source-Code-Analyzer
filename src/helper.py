@@ -42,6 +42,11 @@ def text_splitter(documents):
 ## load embeddings
 
 def load_embedding():
-    embeddings = OpenAIEmbeddings(disallowed_special=())
+    embeddings = OpenAIEmbeddings(
+        model="openai/text-embedding-3-small",
+        openai_api_key=os.getenv("OPENROUTER_API_KEY"),
+        openai_api_base="https://openrouter.ai/api/v1",
+        disallowed_special=()
+    )
 
     return embeddings
