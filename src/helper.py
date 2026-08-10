@@ -1,17 +1,16 @@
 import os
 from git import Repo
-from langchain.document_loaders.generic import GenericLoader
-from langchain.document_loaders.parsers import LanguageParser
-from langchain.text_splitter import Language
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.document_loaders.generic import GenericLoader
+from langchain_community.document_loaders.parsers import LanguageParser
+from langchain_text_splitters import Language, RecursiveCharacterTextSplitter
+from langchain_openai import OpenAIEmbeddings
 
 ## clone github repos
 
 def repo_ingeastion(repo_url):
-    os.makedirs("repo",exist_ok=True)
-    repo_path="repo/"
-    Repo.clone_from(repo_url,to_path=repo_path)
+    os.makedirs("repo", exist_ok=True)
+    repo_path = "repo/"
+    Repo.clone_from(repo_url, to_path=repo_path)
 
 ## Loads repos as documents
 def load_repo(repo_path):
@@ -19,7 +18,7 @@ def load_repo(repo_path):
         repo_path,
         glob="**/*",
         suffixes=[".py"],
-        parser = LanguageParser(language=Language.PYTHON,parser_threshhold=500)
+        parser=LanguageParser(language=Language.PYTHON, parser_threshold=500)  # fixed typo: threshhold -> threshold
     )
 
     documents = loader.load()
@@ -40,6 +39,8 @@ def text_splitter(documents):
 
 
 ## load embeddings
+# NOTE: OpenRouter key zaruri hai embeddings ke liye — base_url aur openai/ prefix dono needed hain
+# OpenRouter sirf chat models natively support karta hai, embeddings ke liye OpenAI endpoint proxy karta hai
 
 def load_embedding():
     embeddings = OpenAIEmbeddings(

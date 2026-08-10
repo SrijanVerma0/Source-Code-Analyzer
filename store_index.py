@@ -1,6 +1,6 @@
-from src.helper import load_repo,text_splitter,load_embedding,repo_ingeastion
+from src.helper import load_repo, text_splitter, load_embedding, repo_ingeastion
 from dotenv import load_dotenv
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 import os
 
 load_dotenv()
@@ -14,5 +14,5 @@ embeddings = load_embedding()
 
 ## storing vectors in ChromaDB
 
-vectordb = Chroma.from_documents(text_chunks,embedding=embeddings,persist_directory='./db')
-vectordb.persist
+vectordb = Chroma.from_documents(text_chunks, embedding=embeddings, persist_directory='./db')
+vectordb.persist()  # fixed: missing parentheses — was a no-op

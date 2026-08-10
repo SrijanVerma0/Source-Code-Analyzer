@@ -1,11 +1,12 @@
-from langchain.vectorstores import Chroma
-from src.helper import load_embedding,repo_ingeastion
+import shutil
+from langchain_community.vectorstores import Chroma
+from src.helper import load_embedding, repo_ingeastion
 from dotenv import load_dotenv
 import os
-from flask import Flask,request,jsonify,render_template
-from langchain.chat_models import ChatOpenAI
-from langchain.chains import ConversationalRetrievalChain
-from langchain.memory import ConversationSummaryMemory
+from flask import Flask, request, jsonify, render_template
+from langchain_openai import ChatOpenAI
+from langchain_classic.chains import ConversationalRetrievalChain
+from langchain_classic.memory import ConversationSummaryMemory
 
 app = Flask(__name__)
 
@@ -19,7 +20,7 @@ persist_directory = 'db'
 
 ## Now loading persisted database from disk
 
-vectordb = Chroma(persist_directory=persist_directory,embedding_func=embeddings)
+vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings)  # fixed: embedding_func -> embedding_function
 
 
 llm = ChatOpenAI(
@@ -28,15 +29,15 @@ llm = ChatOpenAI(
     openai_api_base="https://openrouter.ai/api/v1"
 )
 
-memory = ConversationSummaryMemory(llm=llm,memory_key = "chat history",return_message = True)
-qa = ConversationalRetrievalChain.from_llm(llm,retriever=vectordb.as_retriever(search_type="mmr", search_kwargs={"k":8}), memory=memory)
+memory = ConversationSummaryMemory(llm=llm, memory_key="chat_history", return_messages=True)  # fixed: space in key, return_message -> return_messages
+qa = ConversationalRetrievalChain.from_llm(llm, retriever=vectordb.as_retriever(search_type="mmr", search_kwargs={"k": 8}), memory=memory)
 
 
-@app.route('/',methods=["GET","POST"])
+@app.route('/', methods=["GET", "POST"])
 def index():
     return render_template('index.html')
 
-@app.route('/chatbot',methods=["GET","POST"])
+@app.route('/chatbot', methods=["GET", "POST"])
 def gitRepo():
 
     if request.method == 'POST':
@@ -47,20 +48,20 @@ def gitRepo():
     return jsonify({'response': str(user_input)})
 
 
-@app.route('/get',methods=["GET","POST"])
+@app.route('/get', methods=["GET", "POST"])
 def chat():
     msg = request.form['msg']
-    imput = msg
-    print(input)
+    user_input = msg  # fixed: was 'imput' (typo), then called builtin 'input' instead
+    print(user_input)
 
-    if input == 'clear':
-        os.system("rm -rf repo")
+    if user_input == 'clear':
+        shutil.rmtree("repo", ignore_errors=True)  # fixed: rm -rf doesn't work on Windows
 
-    result = qa(input)
+    result = qa.invoke({"question": user_input})  # fixed: langchain>=0.2 requires .invoke(dict) not direct call
     print(result['answer'])
     return str(result['answer'])
 
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=8080,debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)
